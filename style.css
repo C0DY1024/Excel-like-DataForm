@@ -1,0 +1,13 @@
+td {
+  width: 160px;
+}
+
+td.activeCell {
+  border: 2px solid #4f46e5;
+}
+td[contenteditable="true"] {
+  background-color: #fff8dc; /* 可編輯時顯示不同顏色 */
+}
+is-editing {
+  outline: 2px solid #3b82f6;
+}
