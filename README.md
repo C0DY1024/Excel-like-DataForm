@@ -22,3 +22,6 @@
 - 公式計算（如 =A1+B1）
 - 多選操作
 - React 版本重構
+
+## 透過RENDER部屬:
+- https://excel-like-dataform.onrender.com
