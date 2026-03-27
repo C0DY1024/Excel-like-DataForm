@@ -9,6 +9,39 @@
   </head>
   <body>
     <div
+      id="readme-overlay"
+      class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center"
+    >
+      <div
+        class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all"
+      >
+        <h2
+          class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2"
+        >
+          歡迎使用 LiteSheet
+        </h2>
+        <ul class="space-y-3 text-gray-600 mb-8">
+          <li class="flex gap-2"><strong>方向鍵：</strong> 移動選取格子</li>
+          <li class="flex gap-2">
+            <strong>Enter：</strong> 進入編輯 / 儲存並跳下一列
+          </li>
+          <li class="flex gap-2">
+            <strong>直接打字：</strong> 立即覆蓋內容並進入編輯
+          </li>
+          <li class="flex gap-2"><strong>Esc：</strong> 取消編輯並還原內容</li>
+          <li class="flex gap-2">
+            <strong>中文支援：</strong> 支援輸入法組字不噴發
+          </li>
+        </ul>
+        <button
+          id="close-readme"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors"
+        >
+          我知道了，開始體驗！
+        </button>
+      </div>
+    </div>
+    <div
       id="app"
       class="w-full h-screen overflow-auto border border-gray-400"
     ></div>

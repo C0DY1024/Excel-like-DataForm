@@ -104,9 +104,9 @@ class DataTable {
     const { row, col } = this.state.cursor;
     const td = this.getCell(row, col);
     if (!td) return;
-
     if (nextMode === MODE.EDITING) {
       this.state.mode = MODE.EDITING;
+
       this.renderEditing(row, col);
     } else if (nextMode === MODE.ACTIVE) {
       if (this.state.mode === MODE.EDITING) {
@@ -255,6 +255,21 @@ class DataTable {
     this.container.appendChild(table);
   }
 }
+const readme = document.getElementById("readme-overlay");
+const closeBtn = document.getElementById("close-readme");
 
+closeBtn.addEventListener("click", () => {
+  readme.classList.add("hidden");
+  // 關閉後自動 focus 第一格，方便直接鍵盤操作
+  dataTable.moveTo(0, 0);
+});
+
+// 進階功能：點擊遮罩背景也能關閉
+readme.addEventListener("click", (e) => {
+  if (e.target === readme) {
+    readme.classList.add("hidden");
+    dataTable.moveTo(0, 0);
+  }
+});
 const dataTable = new DataTable(app, data);
 dataTable.init();

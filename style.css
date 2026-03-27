@@ -1,13 +1,30 @@
 td {
-  width: 160px;
+  max-width: 100px; /* 與你 JS 設定的 w-[100px] 一致 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超出時顯示 ... */
 }
 
 td.activeCell {
   border: 2px solid #4f46e5;
 }
 td[contenteditable="true"] {
-  background-color: #fff8dc; /* 可編輯時顯示不同顏色 */
+  background-color: #fff8dc;
 }
-is-editing {
-  outline: 2px solid #3b82f6;
+td.is-editing {
+  white-space: normal; /* 允許換行 */
+  overflow: visible; /* 允許內容溢出 */
+  min-height: 40px;
+  height: auto !important; /* 高度自適應內容 */
+  background: white;
+  z-index: 50;
+  position: relative;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* 增加浮空感 */
+}
+#readme-overlay {
+  transition: opacity 0.3s ease-out;
+}
+#readme-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
