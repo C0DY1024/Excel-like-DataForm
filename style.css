@@ -1,3 +1,20 @@
+#excel-editor {
+  position: fixed; /* 改成固定定位 */
+  opacity: 0;
+  z-index: -1;
+  pointer-events: none;
+  border: 2px solid #3b82f6;
+  background: white;
+  box-sizing: border-box;
+  /* 移除任何 transition，否則移動時會有延遲感 */
+  transition: none;
+}
+/* 激活狀態 */
+#excel-editor.active {
+  opacity: 1;
+  z-index: 1000;
+  pointer-events: auto;
+}
 td {
   max-width: 100px; /* 與你 JS 設定的 w-[100px] 一致 */
   white-space: nowrap;

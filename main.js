@@ -1,17 +1,15 @@
-const app = document.getElementById("app");
-
 //Default Data表格///
 const ROWS = 30;
 const COLS = 50;
 const data = Array.from({ length: ROWS }, () =>
   Array.from({ length: COLS }, () => ""),
 );
-console.log(data);
+// console.log(data);
 const MODE = {
   ACTIVE: "active",
   EDITING: "editing",
 };
-class DataTable {
+export class DataTable {
   constructor(container, data) {
     this.container = container;
     this.data = data;
@@ -32,90 +30,106 @@ class DataTable {
 
   ///綁定事件
   bindEvents() {
-    this.container.addEventListener("mousedown", (event) => {
-      const td = event.target.closest("td");
-      if (!td) return;
-      event.preventDefault();
-      const row = parseInt(td.dataset.row);
-      const col = parseInt(td.dataset.col);
-      if (this.state.mode === MODE.EDITING) {
-        this.moveTo(row, col);
-        return;
-      }
-
-      if (this.state.mode === MODE.ACTIVE) {
-        if (this.state.cursor.row === row && this.state.cursor.col === col) {
-          this.switchMode(MODE.EDITING);
-        } else {
-          this.moveTo(row, col);
+    const editor = document.getElementById("excel-editor");
+    this.container.addEventListener("click", () => editor.focus());
+    editor.addEventListener("input", (e) => {
+      if (editor.value.length > 0) {
+        this.switchMode(MODE.EDITING);
+        const { row, col } = this.state.cursor;
+        const td = this.getCell(row, col);
+        if (td) {
+          this.showEditer(td);
+          td.textContent = editor.value;
         }
       }
     });
 
-    this.container.addEventListener("keydown", (event) => {
-      const { mode } = this.state;
-      if (event.key === "Enter") {
-        event.preventDefault();
-        if (mode === MODE.ACTIVE) {
+    // 按下 Enter 完成輸入
+    editor.addEventListener("keydown", (e) => {
+      const { row, col } = this.state.cursor;
+      const td = this.getCell(row, col);
+      if (e.key === "Enter") {
+        if (this.state.mode === MODE.ACTIVE) {
           this.switchMode(MODE.EDITING);
-        } else if (mode === MODE.EDITING) {
-          this.switchMode(MODE.ACTIVE);
-          let { row, col } = this.state.cursor;
-          this.moveTo(row + 1, col);
+          this.showEditer(td);
+
+          return;
         }
-        return;
+        if (this.state.mode === MODE.EDITING) {
+          this.saveCell(row, col);
+          editor.value = "";
+          editor.classList.remove("active");
+          this.moveTo(row + 1, col);
+          editor.focus();
+          return;
+        }
       }
-      ///上下左右控制
-      if (event.key.startsWith("Arrow")) {
-        if (this.state.mode === MODE.EDITING) return;
-        let { row, col } = this.state.cursor;
-        event.preventDefault();
+      if (e.key.startsWith("Arrow")) {
+        if (this.state.mode === MODE.ACTIVE)
+          switch (e.key) {
+            case "ArrowUp":
+              this.moveTo(row - 1, col);
+              break;
+            case "ArrowDown":
+              this.moveTo(row + 1, col);
+              break;
+            case "ArrowLeft":
+              this.moveTo(row, col - 1);
+              break;
+            case "ArrowRight":
+              this.moveTo(row, col + 1);
 
-        if (event.key === "ArrowUp") row--;
-        if (event.key === "ArrowDown") row++;
-        if (event.key === "ArrowRight") col++;
-        if (event.key === "ArrowLeft") col--;
-        this.moveTo(row, col);
+              break;
+            default:
+              break;
+          }
       }
-      ///輸入直接進編輯
-      if (mode === MODE.ACTIVE && event.key.length === 1) {
-        const { row, col } = this.state.cursor;
-        const td = this.getCell(row, col);
-
-        this.switchMode(MODE.EDITING);
-        td.textContent = event.key;
-        this.moveCursor(row, col);
-
-        event.preventDefault();
-        return;
-      }
-      ///esc跳出編輯
-      if (event.key === "Escape" && mode === MODE.EDITING) {
-        const { row, col } = this.state.cursor;
-        const td = this.getCell(row, col);
+      if (e.key === "Escape") {
         td.textContent = this.data[row][col];
-        this.switchMode(MODE.ACTIVE);
+        editor.value = "";
+        editor.classList.remove("active");
+        editor.focus();
         return;
       }
+    });
+
+    //////點擊
+    this.container.addEventListener("click", (event) => {
+      const td = event.target.closest("td");
+      if (!td) return;
+      const row = parseInt(td.dataset.row);
+      const col = parseInt(td.dataset.col);
+      const { row: oldRow, col: oldCol } = this.state.cursor;
+      ///點同意格進入編輯
+      if (oldRow === row && oldCol === col) {
+        this.switchMode(MODE.EDITING);
+        this.showEditer(td);
+
+        return;
+      }
+      if (this.state.mode === MODE.EDITING) {
+        this.switchMode(MODE.ACTIVE);
+        this.saveCell(oldRow, oldCol); // 儲存資料
+        editor.value = "";
+        editor.classList.remove("active");
+        this.moveTo(row, col);
+        editor.focus();
+        return;
+      }
+      this.moveTo(row, col);
+      setTimeout(() => editor.focus(), 0);
     });
   }
   ///切換模式
   switchMode(nextMode) {
     const { row, col } = this.state.cursor;
-    const td = this.getCell(row, col);
-    if (!td) return;
     if (nextMode === MODE.EDITING) {
       this.state.mode = MODE.EDITING;
-
-      this.renderEditing(row, col);
     } else if (nextMode === MODE.ACTIVE) {
       if (this.state.mode === MODE.EDITING) {
         this.saveCell(row, col);
       }
       this.state.mode = MODE.ACTIVE;
-      const { row: oldRow, col: oldCol } = this.state.activeCell;
-      this.clearStyle(oldRow, oldCol);
-      this.renderActive(row, col);
     }
   }
   ///找到格子(dom)
@@ -130,79 +144,53 @@ class DataTable {
       console.log(this.data);
     }
   }
-  ///渲染編輯中的格子
-  renderEditing(row, col) {
-    const td = this.getCell(row, col);
-    if (!td) return;
-    td.classList.add("is-editing");
-    td.contentEditable = true;
-    this.moveCursor(row, col);
-    td.focus();
+  showEditer(td) {
+    const editor = document.getElementById("excel-editor");
+    const rect = td.getBoundingClientRect();
+    editor.classList.add("active");
+    editor.style.top = rect.top + "px";
+    editor.style.left = rect.left + "px";
+    editor.style.width = rect.width + "px";
+    editor.style.height = rect.height + "px";
+    editor.focus();
   }
   //渲染被選取的格子
   renderActive(row, col) {
     const td = this.getCell(row, col);
     if (!td) return;
-
     td.classList.add("activeCell");
-    td.focus();
-
-    this.state.activeCell = { row, col };
+    this.state.cursor = { row, col };
   }
   ///清除格子的css
   clearStyle(row, col) {
     const td = this.getCell(row, col);
     if (!td) return;
-    td.classList.remove(
-      "ring-2",
-      "ring-blue-500",
-      "z-10",
-      "relative",
-      "is-editing",
-      "ring-2",
-      "ring-blue-500",
-      "activeCell",
-    );
-    td.contentEditable = false;
-    td.blur();
+    td.classList.remove("activeCell");
   }
   ////移動游標至格子
-  moveCursor(row, col) {
-    const td = this.getCell(row, col);
-    const range = document.createRange();
-    const selection = window.getSelection();
-    range.selectNodeContents(td);
-    range.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(range);
-  }
+  // moveCursor(row, col) {
+  //   const td = this.getCell(row, col);
+  //   const range = document.createRange();
+  //   const selection = window.getSelection();
+  //   range.selectNodeContents(td);
+  //   range.collapse(false);
+  //   selection.removeAllRanges();
+  //   selection.addRange(range);
+  // }
+
   ///重新定位格子
   moveTo(row, col) {
     const maxRow = this.data.length;
     const maxCol = this.data[0].length;
-    if (row < 0 || row >= maxRow || col < 0 || col >= maxCol) return;
-
+    if (!isWithinRange(row, col, maxRow, maxCol)) return;
+    const { row: oldRow, col: oldCol } = this.state.cursor;
     if (this.state.mode === MODE.EDITING) {
       this.switchMode(MODE.ACTIVE);
     }
-
-    this.state.cursor = { row, col };
-    const { row: oldRow, col: oldCol } = this.state.activeCell;
     this.clearStyle(oldRow, oldCol);
+    this.state.cursor = { row, col };
     this.renderActive(row, col);
   }
-  //取得欄標籤
-  getColLabel(col) {
-    let label = "";
-    col += 1;
-    while (col > 0) {
-      col--;
-      label = String.fromCharCode(65 + (col % 26)) + label;
-      col = Math.floor(col / 26);
-    }
-    return label;
-  }
-
   ///渲染表格
   renderTable() {
     this.container.innerHTML = "";
@@ -223,7 +211,7 @@ class DataTable {
       const th = document.createElement("th");
       th.className =
         "border border-gray-300 bg-gray-100 font-normal text-center w-[100px] h-10";
-      th.textContent = this.getColLabel(col);
+      th.textContent = getColLabel(col);
       headRow.appendChild(th);
     }
     thead.appendChild(headRow);
@@ -241,7 +229,6 @@ class DataTable {
         const td = document.createElement("td");
         if (!this.cells[i]) this.cells[i] = [];
         this.cells[i][j] = td;
-        td.tabIndex = 0;
         td.className =
           "border border-gray-300 px-2 w-[100px] h-10 focus:outline-none overflow-hidden whitespace-nowrap";
         td.dataset.row = i;
@@ -255,21 +242,40 @@ class DataTable {
     this.container.appendChild(table);
   }
 }
-const readme = document.getElementById("readme-overlay");
-const closeBtn = document.getElementById("close-readme");
-
-closeBtn.addEventListener("click", () => {
-  readme.classList.add("hidden");
-  // 關閉後自動 focus 第一格，方便直接鍵盤操作
-  dataTable.moveTo(0, 0);
-});
-
-// 進階功能：點擊遮罩背景也能關閉
-readme.addEventListener("click", (e) => {
-  if (e.target === readme) {
-    readme.classList.add("hidden");
-    dataTable.moveTo(0, 0);
+///是否超出邊界
+export function isWithinRange(row, col, maxRow, maxCol) {
+  return row >= 0 && row < maxRow && col >= 0 && col < maxCol;
+}
+////標籤欄位命名
+export function getColLabel(col) {
+  let label = "";
+  col += 1;
+  while (col > 0) {
+    col--;
+    label = String.fromCharCode(65 + (col % 26)) + label;
+    col = Math.floor(col / 26);
   }
-});
-const dataTable = new DataTable(app, data);
-dataTable.init();
+  return label;
+}
+
+if (typeof document !== "undefined") {
+  const app = document.getElementById("app");
+  const dataTable = new DataTable(app, data);
+  dataTable.init();
+  const readme = document.getElementById("readme-overlay");
+  const closeBtn = document.getElementById("close-readme");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      readme.classList.add("hidden");
+      dataTable.moveTo(0, 0);
+      const editor = document.getElementById("excel-editor");
+      if (editor) editor.focus();
+    });
+  }
+  readme.addEventListener("click", (e) => {
+    if (e.target === readme) {
+      readme.classList.add("hidden");
+      dataTable.moveTo(0, 0);
+    }
+  });
+}
