@@ -18,3 +18,15 @@
 ├── DataTable.js        # 核心商業邏輯、資料狀態維護、狀態機定義
 ├── Renderer.js         # 虛擬滾動計算、動態 DOM 生成、浮動編輯器定位
 └── utils.js            # 工具函數（邊界檢查、Excel 欄位英文字母轉換演算法）
+```
+## 未來擴充方向:
+
+- Undo / Redo 機制
+- 複製 / 貼上功能
+- 公式計算（如 =A1+B1）
+- 多選操作
+- React 版本重構
+
+## 透過RENDER部屬:
+
+- https://excel-like-dataform.onrender.com
