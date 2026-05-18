@@ -24,7 +24,9 @@
 - Undo / Redo 機制
 - 複製 / 貼上功能
 - 公式計算（如 =A1+B1）
+- 為欄位建立Schema型別定義
 - 多選操作
+- 導入Intl API
 - React 版本重構
 
 ## 透過RENDER部屬:
