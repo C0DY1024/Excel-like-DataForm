@@ -11,11 +11,11 @@
 ## 技術細節
 
 ### 專案架構
-├── index.html          # 精簡的入口 HTML，維護分離的 Editor 獨立圖層
-├── main.js             # 應用程式進入點，負責全域事件綁定與生命週期協調
-├── DataTable.js        # 核心邏輯、資料狀態維護、狀態機定義
-├── Renderer.js         # 虛擬滾動計算、動態 DOM 生成、浮動編輯器定位
-└── utils.js            # 工具函數（邊界檢查、Excel 欄位英文字母轉換演算法）
+-├── index.html          # 精簡的入口 HTML，維護分離的 Editor 獨立圖層
+-├── main.js             # 應用程式進入點，負責全域事件綁定與生命週期協調
+-├── DataTable.js        # 核心邏輯、資料狀態維護、狀態機定義
+-├── Renderer.js         # 虛擬滾動計算、動態 DOM 生成、浮動編輯器定位
+-└── utils.js            # 工具函數（邊界檢查、Excel 欄位英文字母轉換演算法）
 
 ## 未來擴充方向:
 - Undo / Redo 機制
